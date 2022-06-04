@@ -63,3 +63,12 @@ iptables -I INPUT -p tcp --dport 80 droppo in input tutto cioò che viene dalla 
 la policy di default è il ritorno al chiamante, non è possibile cambiarla ma si può mettere in fondo una regola che catturi tutto
 
 
+# comandi sul pdf di teoria
+
+iptables -A FORWARD -i ppp0 -d 87.15.12.0/24 -p tcp --dport 80 -j ACCEPT
+iptables -P INPUT DROP
+iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -o ppp0 -j SNAT --to-source 87.4.8.21
+iptables -t nat -A PREROUTING -i ppp0 -d 87.4.8.21 -p tcp --dport 2222 -j DNAT --to-destination 192.168.0.1:22
+iptables -D FORWARD 1
+iptables -I INPUT 13 -p icmp ! --icmp-type echo-reply -j DROP
+iptables -A OUTPUT -p tcp --tcp-flags SYN,ACK,FIN FIN 
