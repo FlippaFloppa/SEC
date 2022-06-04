@@ -1,0 +1,65 @@
+#Esercitazione Firewall
+
+per vedere quali sono le regole che ci in una tabella
+iptables -t nat -L
+
+La prima cosa da fare quando dobbiamo mettere una regola, dobbiamo pensare a dove mettere la regola. Perchè se voglio che il pacchettonon arrivi alla mia macchina allora lo devo bloccare sulla catena di input, se è un processo generato dall'interno allora va bloccato in output, se sto solo smistando del traffico essendo un router allora va getito nella catena di forward (non necessariamente sempre eliminato, ma possono anche solo fare delle modifiche)
+
+# blocco del ping
+
+Se voglio bloccare i ping che mi arrivano da R1, allora devo bloccarli in input.
+L'interafccia attraverso la quale sono connesso è eth2
+In input seleziono i pacchetti che entrano da eth2, che arrivano da h1 (potrei addirittura vedere il mac address di R1 e bloccarlo).
+Layer 3 spesso si fanno controlli sull'indirizzo ip, quindi metto l'indirizzo ip di R2 in modo da bloccarlo
+
+con ip a vedo le interfacce 
+
+se mettiamo -j REJECT allora il router produce un icmp che comunica il fatto che l'operazione è stata rifiutata, invece se mettiamo -j DROP allora il pacchetto viene solo scartato.
+Quindi nel caso dobbiamo bloccare il traffico proveniente dall'interno allora la scelta migliore è quella di usare REJECT in modo da segnalarlo, se invece vogliamo bloccare il traffico dall'esterno è meglio usare DROP in modo da non inviare risposte per risparmiare banda
+
+iptables -I INPUT -i eth0 -s 10.12.12.2 -p icmp --icmp-type echo-request -j DROP
+
+# rimuovere regole
+iptables -D INPUT -i eth0 -s 10.12.12.2 -p icmp --icmp-type echo-request -j DROP
+iptables -vnL --line-numbers per far enumerare le regole
+iptables -D 1
+
+# per non rispondere ai ping di 10.12.12.10
+iptables -I OUTPUT -p icmp -d 10.12.12.10 -j DROP
+se voglio bloccarli tutti allora basta rimuovere il -d
+
+Per far parlare h10 su h20 devo tirar su la vpn
+
+# un nat che in post routing mette il proprio indirizzo sorgente il suo
+è una cosa che fanno tutti i router
+iptables -t nat -I POSTROUTING -s 192.168.10.10 -d 10.12.12.20 -j SNAT --to-source 10.12.12.10
+
+se io sto configurando un server via ssh e gli dico non accettare nulla dall'esterno, allora vengo buttato via, bisogna fare attenzione e aprire una via per l'ssh
+
+#non devi accettare nulla che arriva a quella porta
+iptables -I INPUT -p tcp ! --dport 2000 -j DROP
+iptables -I OUTPUT -p tcp ! --sport 2000 -j DROP
+queste regole vanno sempre in coppia
+
+
+# consentire l'accesso a internet
+iptables -I INPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -I INPUT -p tcp --sport 80 -m state --state ENSHABLISHED -j ACCEPT
+
+
+iptables -A INPUT -j LOG --log-prefix "input-drop"
+-A append la mette in fondo
+-I inserisce la regola in cosa
+-I <NUMBER> la inseerisce a quella posizione
+
+# unire regole compless
+come faccio a dire che 
+iptables -F pulisce
+iptables -I INPUT -p tcp -j ACCEPT accetto tutto il tcp e droppo tutto il resto
+iptables -I INPUT -p tcp --dport 80 droppo in input tutto cioò che viene dalla porta 80
+
+
+# catene custom
+la policy di default è il ritorno al chiamante, non è possibile cambiarla ma si può mettere in fondo una regola che catturi tutto
+
+

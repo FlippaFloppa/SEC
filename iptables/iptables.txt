@@ -1,0 +1,27 @@
+### PER SCRIVERLE IN ORDINE INVECE DI "-I" USARE "-A"
+
+
+# consente qualunque traffico in entrata e in uscita sulla interfaccia di loopback (catena input e output)
+sudo iptables -I INPUT -i lo -j ACCEPT 
+sudo iptables -I OUTPUT -o lo -j ACCEPT 
+
+# consente il traffico delle connessioni HTTP entranti
+sudo iptables -I INPUT -i eth0 -j ACCEPT --dport 80 -p tcp
+
+# consente connessioni SSH uscenti verso IP scelto
+sudo iptables -I OUTPUT -d 192.168.56.0/24 --dport 22 -p tcp -m state --state ESTABLISHED -j ACCEPT
+
+# alternativa SSH
+sudo iptables -A INPUT -p tcp -s 192.168.56.0/24 --sport 22 -m state --state ESTABLISHED -j ACCEPT
+
+# blocca inoltro del traffico dalla rete host-only verso altre destinazioni
+sudo iptables -A FORWARD -s 192.168.56.0/24 ! -d 192.168.56.0/24 -j DROP	
+
+# consente risoluzione nomi DNS
+sudo iptables -I INPUT -p udp --dport 53
+sudo iptables -I OUTPUT -p udp --dport 53
+
+# blocca tutto il traffico in entrata
+sudo iptables -P INPUT DROP
+
+
