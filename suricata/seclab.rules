@@ -24,8 +24,8 @@ alert ip any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; s
 #traffico verso evilcorp.com (non funziona perché deve essre un ip)
 alert tcp any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
 
-#traffico bidirezionale tra due IP che filtra per contenuto (probabilmente la flag è composta da '_'"
-alert tcp 192.168.56.1 any <> 192.168.56.3 any (msg:"traffico tcp";content: "_";)
+#traffico bidirezionale (sulla porta 6666) tra due IP che filtra per contenuto (probabilmente la flag è composta da '_'"
+alert tcp 192.168.56.1 any <> 192.168.56.3 6666 (msg:"traffico tcp";content: "_";)
 
 #regola per mqtt con dentro il payload flag
 alert mqtt any any <> any any (content: "flag";)
