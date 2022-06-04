@@ -1,17 +1,31 @@
 # DECOMMENTARE payload_printable: yes per stampare il content
 
 
+### REGOLE FATTE IN LAB ###
+
+#ping generico
+alert icmp any any -> any any (msg:"Ping detected"; itype:8; sid:1000477; rev:1;)
+
+#riconosce il traffico che usa tls e che ha come content "youtube"
+alert tls any any -> any any (msg:"SURICATA TRAFFIC-ID: youtube"; tls_sni; content:"youtube.com"; isdataat:!1,relative; flow:to_server,established; flowbits: set,traffic/id/bing; flowbits:set,traffic/label/search; noalert; sid:300000000; rev:1;)
+
+#riconosce la CVE-2014-6271
+alert http any any -> any any (msg:"Volex – Possible CVE-2014-6271 bash Vulnerability Requested (header)"; flow:established,to_server; content:"() {"; http_header; threshold:type limit, track by_src, count 1, seconds 120; sid:2014092401;
+
+
+### ALTRE REGOLE ###
+
 #ping solo in entrata su 192.168.1.X, alternativamente si può usare la variabile $HOME_NET
 alert icmp any any -> 192.168.1.0/24 any (msg:"Ping detected"; itype:8; sid:1000477; rev:1;)
 
 #qualsiasi richiesta ad evilcorp.com
-#alert ip any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
+alert ip any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
 
 #traffico verso evilcorp.com (non funziona perché deve essre un ip)
-#alert tcp any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
+alert tcp any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
 
 #traffico bidirezionale tra due IP che filtra per contenuto (probabilmente la flag è composta da '_'"
-#alert tcp 192.168.56.1 any <> 192.168.56.3 any (msg:"traffico tcp";content: "_";)
+alert tcp 192.168.56.1 any <> 192.168.56.3 any (msg:"traffico tcp";content: "_";)
 
 #regola per mqtt con dentro il payload flag
-#alert mqtt any any <> any any (content: "flag";)
+alert mqtt any any <> any any (content: "flag";)
