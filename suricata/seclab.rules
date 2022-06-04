@@ -1,0 +1,17 @@
+# DECOMMENTARE payload_printable: yes per stampare il content
+
+
+#ping solo in entrata su 192.168.1.X, alternativamente si può usare la variabile $HOME_NET
+alert icmp any any -> 192.168.1.0/24 any (msg:"Ping detected"; itype:8; sid:1000477; rev:1;)
+
+#qualsiasi richiesta ad evilcorp.com
+#alert ip any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
+
+#traffico verso evilcorp.com (non funziona perché deve essre un ip)
+#alert tcp any any -> evilcorp.com any (msg:"SURICATA TRAFFIC-ID: evilcorp.com"; sid:300000001; rev:1;)
+
+#traffico bidirezionale tra due IP che filtra per contenuto (probabilmente la flag è composta da '_'"
+#alert tcp 192.168.56.1 any <> 192.168.56.3 any (msg:"traffico tcp";content: "_";)
+
+#regola per mqtt con dentro il payload flag
+#alert mqtt any any <> any any (content: "flag";)
