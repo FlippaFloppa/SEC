@@ -72,3 +72,33 @@ iptables -t nat -A PREROUTING -i ppp0 -d 87.4.8.21 -p tcp --dport 2222 -j DNAT -
 iptables -D FORWARD 1
 iptables -I INPUT 13 -p icmp ! --icmp-type echo-reply -j DROP
 iptables -A OUTPUT -p tcp --tcp-flags SYN,ACK,FIN FIN 
+
+
+### ESERCIZI PER CASA SUI NAMESPACE E DOCKER (SNAT DNAT)###
+
+#scrivere il procedimento per riuscire a inserire, in FORWARD di R1 e R2, una regola di log 
+#nella posizione specifica subito prima delle regole DROP del traffico sulla porta 22, 
+#in modo da registrare i pacchetti che non vengono accettati dalle regole iniziali 
+#(che consentono le connessioni ssh da H10 a H20) 
+iptables -I FORWARD -p tcp --dport 22 -j DROP
+iptables -I FORWARD -p tcp --sport 22 -j DROP
+iptables -I FORWARD -p tcp -s 192.168.10.10 -d 192.168.20.20 --dport 22 -j ACCEPT
+iptables -I FORWARD -p tcp -s 192.168.20.20 -d 192.168.10.10 --sport 22 -m state --state ESTABLISHED -j ACCEPT
+
+
+#rimuovere  da H20 la regola di routing di default via R2, e inserire su R22 una regola di NAT tale
+#per cui il traffico ssh in arrivo attraverso la vpn e diretto a H20 venga mascherato, 
+#impostando come indirizzo sorgente 192.168.20.254
+ip netns exec h20 ip route del default via 192.168.20.254
+iptables -t nat -I POSTROUTING -s 192.168.10.0/24 -d 192.168.20.0/24 -j SNAT --to-source 192.168.20.254
+
+
+#inserire su H10 e H20 regole per imporre vincoli su ssh analoghi a quelli inseriti sui gateway:
+#H10 si deve solamente poter collegare via ssh a "H20" (ricordate che in realtà avendo fatto i NAT si collegherà a R1), 
+#e H20 deve solo poter ricevere connessioni ssh da "host1" (che sembreranno provenire da R2)
+iptables -I OUTPUT -d 192.168.10.254 -p tcp --dport 22 -j ACCEPT
+iptables -I INPUT -s 192.168.10.254 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+iptables -I INPUT -i lo -j ACCEPT
+iptables -I OUTPUT -o lo -j ACCEPT
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
